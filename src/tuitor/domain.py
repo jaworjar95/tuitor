@@ -1,7 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Annotated
 
-from tests.test_domain import category
 from .identifiers import (
     CategoryId, TopicId, UserId, QuizId, QuestionId, QuestionAttemptId, QuizAttemptId,
     new_user_id, new_category_id, new_topic_id, new_quiz_id, new_question_id, new_question_attempt_id, new_quiz_attempt_id,
