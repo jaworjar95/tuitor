@@ -25,9 +25,9 @@ def test_users_unique_ids():
 
 def test_evaluation_rating_is_within_boundaries():
     with pytest.raises(ValidationError):
-        Evaluation(is_correct=True, feedback="Got it SOOOO right", raiting=11)
+        Evaluation(is_correct=True, feedback="Got it SOOOO right", rating=11)
     with pytest.raises(ValidationError):
-        Evaluation(is_correct=False, feedback="Got it SOOOO wrong", raiting=0)
+        Evaluation(is_correct=False, feedback="Got it SOOOO wrong", rating=0)
 
 def test_add_new_answers(question):
     question_attempt = QuestionAttempt(question_id=question.id)

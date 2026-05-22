@@ -1,5 +1,7 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Annotated
+
+from tests.test_domain import category
 from .identifiers import (
     CategoryId, TopicId, UserId, QuizId, QuestionId, QuestionAttemptId, QuizAttemptId,
     new_user_id, new_category_id, new_topic_id, new_quiz_id, new_question_id, new_question_attempt_id, new_quiz_attempt_id,
@@ -27,25 +29,32 @@ class Question(BaseModel):
 class Quiz(BaseModel):
     id: QuizId = Field(default_factory=new_quiz_id)
     name: str
+    category_id: CategoryId | None = None
+    topic_id: TopicId | None = None
     question_ids: list[QuestionId] = []
     def add_question(self, question_id: QuestionId) -> None:
         if question_id not in self.question_ids: 
             self.question_ids.append(question_id)
+    @model_validator(mode="after")
+    def _topic_requires_category(self) -> Quiz:
+        if self.topic_id is not None and self.category_id is None:
+            raise ValueError("topic_id requires set category_id")
+        return self
 
 class Evaluation(BaseModel):
     model_config = ConfigDict(frozen=True)
     is_correct: bool
-    raiting: Annotated[int, Field(gt=0, lt=11)]
+    rating: Annotated[int, Field(gt=0, lt=11)]
     feedback: str
     hint: str | None = None
 
 class Answer(BaseModel):
     content: str
     evaluation: Evaluation | None = None
-    def evaluate(self, is_correct: bool, raiting: int, feedback: str, hint: str | None = None) -> Evaluation:
+    def evaluate(self, is_correct: bool, rating: int, feedback: str, hint: str | None = None) -> Evaluation:
         if self.evaluation is not None:
-            raise ValueError(f"Answer was already evaluated: correct: {self.evaluation.is_correct}, raiting: {self.evaluation.raiting}")
-        evaluation = Evaluation(is_correct=is_correct, raiting=raiting, feedback=feedback, hint=hint)
+            raise ValueError(f"Answer was already evaluated: correct: {self.evaluation.is_correct}, rating: {self.evaluation.rating}")
+        evaluation = Evaluation(is_correct=is_correct, rating=rating, feedback=feedback, hint=hint)
         self.evaluation = evaluation
         return evaluation
 
