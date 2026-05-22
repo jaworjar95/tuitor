@@ -34,23 +34,37 @@ class Quiz(BaseModel):
 
 class Evaluation(BaseModel):
     model_config = ConfigDict(frozen=True)
-    rating: Annotated[int, Field(gt=0, lt=11)]
+    is_correct: bool
+    raiting: Annotated[int, Field(gt=0, lt=11)]
     feedback: str
     hint: str | None = None
 
 class Answer(BaseModel):
     content: str
     evaluation: Evaluation | None = None
+    def evaluate(self, is_correct: bool, raiting: int, feedback: str, hint: str | None = None) -> Evaluation:
+        if self.evaluation is not None:
+            raise ValueError(f"Answer was already evaluated: correct: {self.evaluation.is_correct}, raiting: {self.evaluation.raiting}")
+        evaluation = Evaluation(is_correct=is_correct, raiting=raiting, feedback=feedback, hint=hint)
+        self.evaluation = evaluation
+        return evaluation
+
 
 class QuestionAttempt(BaseModel):
     id: QuestionAttemptId = Field(default_factory=new_question_attempt_id)
     question_id: QuestionId
     quiz_attempt_id: QuizAttemptId | None = None
     answers: list[Answer] = []
-    def submit_answer(self, answer_content) -> Answer:
+    solved: bool | None = False
+    def submit_answer(self, answer_content: str) -> Answer:
         answer = Answer(content=answer_content)
         self.answers.append(answer)
         return answer
+    def is_solved(self) -> bool:
+        for answer in reversed(self.answers):
+            if answer.evaluation is not None and answer.evaluation.is_correct:
+                return True
+        return False
 
 class QuizAttempt(BaseModel):
     id: QuizAttemptId = Field(default_factory=new_quiz_attempt_id)
