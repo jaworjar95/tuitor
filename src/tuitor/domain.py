@@ -18,38 +18,43 @@ class Topic(BaseModel):
     category_id: CategoryId
     name: str
 
-class Quiz(BaseModel):
-    id: QuizId = Field(default_factory=new_quiz_id)
-    name: str
-
 class Question(BaseModel):
     id: QuestionId = Field(default_factory=new_question_id)
     category_id: CategoryId
     topic_id: TopicId | None = None
     content: str
 
+class Quiz(BaseModel):
+    id: QuizId = Field(default_factory=new_quiz_id)
+    name: str
+    question_ids: list[QuestionId] = []
+    def add_question(self, question_id: QuestionId) -> None:
+        if question_id not in self.question_ids: 
+            self.question_ids.append(question_id)
+
 class Evaluation(BaseModel):
     model_config = ConfigDict(frozen=True)
     rating: Annotated[int, Field(gt=0, lt=11)]
-    content: str
+    feedback: str
     hint: str | None = None
 
 class Answer(BaseModel):
-    model_config = ConfigDict(frozen=True)
     content: str
     attempt_number: int
     evaluation: Evaluation | None = None
 
-
 class QuestionAttempt(BaseModel):
     id: QuestionAttemptId = Field(default_factory=new_question_attempt_id)
     question_id: QuestionId
+    quiz_attempt_id: QuizAttemptId | None = None
     answers: list[Answer] = []
-
+    def submit_answer(self, answer_content) -> Answer:
+        answer = Answer(content=answer_content, attempt_number=len(self.answers)+1)
+        self.answers.append(answer)
+        return answer
 
 class QuizAttempt(BaseModel):
     id: QuizAttemptId = Field(default_factory=new_quiz_attempt_id)
     quiz_id: QuizId
     user_id: UserId
-    question_attempts: list[QuestionAttempt] = []
 
