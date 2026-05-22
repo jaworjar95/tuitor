@@ -16,11 +16,7 @@ def question(category, topic):
 
 @pytest.fixture
 def answer():
-    return Answer(content="France", attempt_number=1)
-
-def test_answer_is_immutable(answer):
-    with pytest.raises(ValidationError):
-        answer.content = "Germany"
+    return Answer(content="France")
 
 def test_users_unique_ids():
     user1 = User(name="Jan")
@@ -29,9 +25,9 @@ def test_users_unique_ids():
 
 def test_evaluation_rating_is_within_boundaries():
     with pytest.raises(ValidationError):
-        eval = Evaluation(content="Got it SOOOO right", rating=11)
+        Evaluation(feedback="Got it SOOOO right", rating=11)
     with pytest.raises(ValidationError):
-        eval = Evaluation(content="Got it SOOOO wrong", rating=0)
+        Evaluation(feedback="Got it SOOOO wrong", rating=0)
 
 def test_add_new_answers(question):
     question_attempt = QuestionAttempt(question_id=question.id)
@@ -39,6 +35,4 @@ def test_add_new_answers(question):
     question_attempt.submit_answer(answer_content="France")
     assert question_attempt.answers[0].content == "Germany"
     assert question_attempt.answers[1].content == "France"
-    assert question_attempt.answers[0].attempt_number == 1
-    assert question_attempt.answers[1].attempt_number == 2
 

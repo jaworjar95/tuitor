@@ -40,7 +40,6 @@ class Evaluation(BaseModel):
 
 class Answer(BaseModel):
     content: str
-    attempt_number: int
     evaluation: Evaluation | None = None
 
 class QuestionAttempt(BaseModel):
@@ -49,7 +48,7 @@ class QuestionAttempt(BaseModel):
     quiz_attempt_id: QuizAttemptId | None = None
     answers: list[Answer] = []
     def submit_answer(self, answer_content) -> Answer:
-        answer = Answer(content=answer_content, attempt_number=len(self.answers)+1)
+        answer = Answer(content=answer_content)
         self.answers.append(answer)
         return answer
 
